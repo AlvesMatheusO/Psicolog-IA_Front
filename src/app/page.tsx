@@ -64,12 +64,40 @@ export default function ChatPage() {
     }
   }, [messages, isTyping]);
 
-  const handleSend = () => {
+  const fetchAIResponse = async (userText: string) => {
+    try {
+      const response = await fetch("https://psicologia-rag.onrender.com/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ message: userText }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Erro na comunicação com a IA");
+      }
+
+      const rawText = await response.text();
+      try {
+        const data = JSON.parse(rawText);
+        return data.text || data.message || rawText;
+      } catch (e) {
+        return rawText;
+      }
+    } catch (error) {
+      console.error("Error fetching AI response:", error);
+      return "Desculpe, estou tendo problemas para me conectar no momento. Poderia tentar novamente em instantes?";
+    }
+  };
+
+  const handleSend = async () => {
     if (!input.trim()) return;
 
+    const userText = input;
     const userMessage: Message = {
       id: Date.now().toString(),
-      text: input,
+      text: userText,
       sender: "user",
       timestamp: new Date(),
     };
@@ -78,20 +106,19 @@ export default function ChatPage() {
     setInput("");
     setIsTyping(true);
 
-    // Simulate AI response
-    setTimeout(() => {
-      setIsTyping(false);
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: "Entendo. É muito importante dar voz a esses sentimentos. Gostaria de explorar mais sobre o que está causando isso ou prefere apenas desabafar um pouco mais?",
-        sender: "ai",
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, aiMessage]);
-    }, 2000);
+    const aiText = await fetchAIResponse(userText);
+    
+    setIsTyping(false);
+    const aiMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      text: aiText,
+      sender: "ai",
+      timestamp: new Date(),
+    };
+    setMessages((prev) => [...prev, aiMessage]);
   };
 
-  const sendPill = (text: string) => {
+  const sendPill = async (text: string) => {
     const userMessage: Message = {
       id: Date.now().toString(),
       text: text,
@@ -102,16 +129,16 @@ export default function ChatPage() {
     setMessages((prev) => [...prev, userMessage]);
     setIsTyping(true);
 
-    setTimeout(() => {
-      setIsTyping(false);
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: "Obrigado por compartilhar isso comigo. Estou aqui para te ouvir e ajudar a refletir. Como posso começar a te apoiar nesse ponto específico?",
-        sender: "ai",
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, aiMessage]);
-    }, 2000);
+    const aiText = await fetchAIResponse(text);
+
+    setIsTyping(false);
+    const aiMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      text: aiText,
+      sender: "ai",
+      timestamp: new Date(),
+    };
+    setMessages((prev) => [...prev, aiMessage]);
   };
 
   return (
@@ -189,7 +216,7 @@ export default function ChatPage() {
         ref={scrollRef}
         className="flex-grow overflow-y-auto px-4 py-8 space-y-8 scrollbar-thin scrollbar-thumb-primary/20 bg-background"
       >
-        <div className="max-w-3xl mx-auto space-y-8 pb-32">
+        <div className="max-w-3xl mx-auto space-y-8 pb-8">
           {messages.map((msg) => (
             <div 
               key={msg.id}
@@ -234,8 +261,8 @@ export default function ChatPage() {
       </div>
 
       {/* Action Zone (Pills + Input) */}
-      <div className="absolute bottom-0 left-0 w-full p-4 md:p-6 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none">
-        <div className="max-w-3xl mx-auto flex flex-col pointer-events-auto">
+      <div className="w-full p-4 md:p-6 bg-background border-t border-secondary dark:border-white/5">
+        <div className="max-w-3xl mx-auto flex flex-col">
           {/* Pills Section (Glassmorphism) */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full pb-4">
             {[
