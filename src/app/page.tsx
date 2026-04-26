@@ -43,8 +43,8 @@ export default function ChatPage() {
     setIsLoading(true);
 
     try {
-      // CHAMADA PARA O BACKEND DO MATHEUS (Rodando local na porta 3001)
-      const response = await fetch("http://localhost:3001/chat", {
+      // CHAMADA PARA O BACKEND OFICIAL (Render)
+      const response = await fetch("https://psicologia-rag.onrender.com/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -54,36 +54,35 @@ export default function ChatPage() {
 
       if (!response.ok) throw new Error("Erro na resposta do servidor");
 
-      const data = await response.json();
+      // AJUSTE PARA TEXTO PURO (Evita o erro de SyntaxError no JSON)
+      const dataText = await response.text();
       
-      // AJUSTE CRÍTICO: O Matheus usa o campo 'text' no JSON dele
-      const aiResponseText = data.text || "Desculpe, não consegui processar sua resposta agora.";
-
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: aiResponseText,
+        text: dataText || "Desculpe, não consegui processar sua resposta agora.",
         sender: "ai",
         timestamp: new Date(),
       };
 
       setMessages((prev) => [...prev, aiMessage]);
 
-      // Lógica de monitoramento de Risco (Pessoa 4) baseada no input do usuário
-      // Sincronizado com os termos que o Matheus também usa no server.js
+      // Lógica de monitoramento de Risco (Pessoa 4)
       const prompt = textToSend.toLowerCase();
-      if (prompt.includes("ajuda") || prompt.includes("socorro") || prompt.includes("morrer") || prompt.includes("suicidio")) {
+      const termosCriticos = ["morrer", "suicidio", "me matar", "tirar minha vida", "me machucar"];
+      const termosApoio = ["triste", "sozinho", "mal", "ajuda", "angustiado", "terminei"];
+
+      if (termosCriticos.some(termo => prompt.includes(termo))) {
         setRiskLevel(3);
-      } else if (prompt.includes("triste") || prompt.includes("sozinho") || prompt.includes("mal")) {
+      } else if (termosApoio.some(termo => prompt.includes(termo))) {
         setRiskLevel(2);
       }
 
     } catch (error) {
       console.error("Erro de Integração:", error);
       
-      // Mensagem de erro visual para o usuário
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: "Ocorreu um erro ao conectar com o assistente. Verifique se o servidor backend está ligado na porta 3001.",
+        text: "O servidor demorou a responder ou enviou um formato inválido. Tente novamente em alguns segundos.",
         sender: "ai",
         timestamp: new Date(),
       };
@@ -101,7 +100,7 @@ export default function ChatPage() {
           <Brain className="w-8 h-8 text-blue-400" />
           <div>
             <h2 className="font-bold leading-none">PsicologIA</h2>
-            <span className="text-[10px] opacity-70">Integração Pessoa 5 - Local</span>
+            <span className="text-[10px] opacity-70">Ambiente de Produção - Render</span>
           </div>
         </div>
         <MoreVertical className="w-5 h-5 opacity-50 cursor-pointer" />
@@ -111,7 +110,7 @@ export default function ChatPage() {
       <div ref={scrollRef} className="flex-grow overflow-y-auto px-4 py-8">
         <div className="max-w-3xl mx-auto space-y-6">
           
-          {/* Banners de Risco (Implementação Pessoa 4/5) */}
+          {/* Banners de Risco */}
           {riskLevel === 2 && (
             <div className="bg-amber-50 text-amber-800 border border-amber-200 p-4 rounded-xl text-sm shadow-sm animate-fade-in">
               <strong>Apoio:</strong> Notei que você está passando por um momento difícil. Estou aqui para te ouvir.
@@ -121,7 +120,7 @@ export default function ChatPage() {
           {riskLevel === 3 && (
             <div className="bg-red-600 text-white p-5 rounded-xl text-sm shadow-lg animate-bounce text-center">
               <p className="font-bold mb-1 underline">VOCÊ NÃO ESTÁ SOZINHO!</p>
-              <p>Procure ajuda agora mesmo. Ligue para o <strong>CVV (188)</strong> ou acesse cvv.org.br. O atendimento é gratuito e sigiloso.</p>
+              <p>Procure ajuda agora mesmo. Ligue para o <strong>CVV (188)</strong> ou acesse cvv.org.br.</p>
             </div>
           )}
 
@@ -156,7 +155,7 @@ export default function ChatPage() {
       <div className="p-4 bg-white border-t border-slate-200 shadow-[0_-4px_6_rgba(0,0,0,0.05)]">
         <div className="max-w-3xl mx-auto space-y-4">
           
-          {/* Sugestões Rápidas (Pills) */}
+          {/* Sugestões Rápidas */}
           <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
             {["Preciso desabafar", "Me sinto triste", "Dicas de relaxamento"].map((pill) => (
               <button 
