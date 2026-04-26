@@ -19,11 +19,7 @@
       }
     ],
     "paths": {
-<<<<<<< HEAD
-      "@/*": ["./*"]
-=======
       "@/*": ["./src/*"]
->>>>>>> 1a5a313 (feat: criação da página do site)
     }
   },
   "include": [
