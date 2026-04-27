@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
-import { Send, Brain, MoreVertical, User, Sparkles, AlertTriangle, Heart } from "lucide-react";
+import { Send, Brain, MoreVertical, User, Sparkles, AlertTriangle, Heart, Star } from "lucide-react";
 
 type Message = {
   id: string;
@@ -174,6 +174,15 @@ export default function ChatPage() {
     }
   };
 
+  // Abre o formulário de avaliação
+  const openFeedbackForm = () => {
+    window.open(
+      "https://docs.google.com/forms/d/e/1FAIpQLSdxsFvXIR0DEcQlmiYbHLXMTe11vk603vn2syWIyVLDmmsJKQ/viewform?fbzx=4157689559825366130",
+      "_blank",
+      "noopener,noreferrer"
+    );
+  };
+
   // Pill buttons sugeridos
   const suggestedPills = [
     "Preciso desabafar...",
@@ -195,9 +204,22 @@ export default function ChatPage() {
             <span className="text-xs opacity-60 font-medium">Espaço seguro de escuta</span>
           </div>
         </div>
-        <button className="p-2 hover:bg-slate-700 rounded-lg transition-colors">
-          <MoreVertical className="w-5 h-5 opacity-70" />
-        </button>
+        
+        {/* HEADER BUTTONS */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={openFeedbackForm}
+            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white rounded-lg font-medium text-sm transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105 active:scale-95"
+            title="Nos avalie! Sua opinião é importante"
+          >
+            <Star className="w-4 h-4" />
+            <span className="hidden sm:inline">Avaliar</span>
+          </button>
+          
+          <button className="p-2 hover:bg-slate-700 rounded-lg transition-colors">
+            <MoreVertical className="w-5 h-5 opacity-70" />
+          </button>
+        </div>
       </header>
 
       {/* CHAT AREA */}
