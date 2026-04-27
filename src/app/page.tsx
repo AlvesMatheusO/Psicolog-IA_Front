@@ -11,11 +11,13 @@ type Message = {
   timestamp: Date;
 };
 
+const MAX_MESSAGES = 20; // 🔥 evita estourar memória
+
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
-      text: "Olá! Sou seu assistente de PsicologIA. Não sou um substituto para um profissional, mas estou aqui para ajudar. Como posso te apoiar hoje? Em casos mais graves procure um profissional de saúde mental ou ligue para o CVV (188) ou acesse [CVV](https://cvv.org.br/).",
+      text: "Olá! Sou seu assistente de PsicologIA. Não sou um substituto para um profissional, mas estou aqui para ajudar. Em casos mais graves, procure um profissional ou ligue 188 ou acesse [CVV](https://cvv.org.br/).",
       sender: "ai",
       timestamp: new Date(),
     },
@@ -25,12 +27,22 @@ export default function ChatPage() {
   const [isTyping, setIsTyping] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // auto scroll
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
 
+  // 🔗 transforma links automáticos em markdown
+  const formatLinks = (text: string) => {
+    return text.replace(
+      /(https?:\/\/[^\s]+)/g,
+      (url) => `[${url}](${url})`
+    );
+  };
+
+  // API
   const fetchAIResponse = async (userText: string) => {
     try {
       const response = await fetch("https://psicologia-rag.onrender.com/chat", {
@@ -54,19 +66,26 @@ export default function ChatPage() {
     }
   };
 
+  // 🔥 função segura para adicionar mensagens
+  const addMessage = (message: Message) => {
+    setMessages((prev) => {
+      const updated = [...prev, message];
+      return updated.slice(-MAX_MESSAGES); // limite
+    });
+  };
+
   const handleSend = async () => {
     if (!input.trim()) return;
 
     const userText = input;
 
-    const userMessage: Message = {
+    addMessage({
       id: Date.now().toString(),
       text: userText,
       sender: "user",
       timestamp: new Date(),
-    };
+    });
 
-    setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsTyping(true);
 
@@ -74,40 +93,34 @@ export default function ChatPage() {
 
     setIsTyping(false);
 
-    const aiMessage: Message = {
+    addMessage({
       id: (Date.now() + 1).toString(),
       text: aiText,
       sender: "ai",
       timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, aiMessage]);
+    });
   };
 
   const sendPill = async (text: string) => {
     setIsTyping(true);
 
-    const userMessage: Message = {
+    addMessage({
       id: Date.now().toString(),
       text,
       sender: "user",
       timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
+    });
 
     const aiText = await fetchAIResponse(text);
 
     setIsTyping(false);
 
-    const aiMessage: Message = {
+    addMessage({
       id: (Date.now() + 1).toString(),
       text: aiText,
       sender: "ai",
       timestamp: new Date(),
-    };
-
-    setMessages((prev) => [...prev, aiMessage]);
+    });
   };
 
   return (
@@ -122,7 +135,10 @@ export default function ChatPage() {
       </header>
 
       {/* CHAT */}
-      <div ref={scrollRef} className="flex-grow overflow-y-auto p-6 space-y-4">
+      <div
+        ref={scrollRef}
+        className="flex-grow overflow-y-auto p-6 space-y-4"
+      >
         {messages.map((msg) => (
           <div
             key={msg.id}
@@ -144,21 +160,33 @@ export default function ChatPage() {
                       href={href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-600 underline hover:text-blue-800"
+                      className="text-blue-600 underline"
                     >
                       {children}
                     </a>
                   ),
-                  p: ({ children }) => <p className="mb-2">{children}</p>,
+                  p: ({ children }) => (
+                    <p className="mb-2 last:mb-0">{children}</p>
+                  ),
+                  li: ({ children }) => (
+                    <li className="ml-4 list-disc mb-1">{children}</li>
+                  ),
+                  strong: ({ children }) => (
+                    <strong className="font-semibold text-blue-600">
+                      {children}
+                    </strong>
+                  ),
                 }}
               >
-                {msg.text}
+                {formatLinks(msg.text)}
               </ReactMarkdown>
             </div>
           </div>
         ))}
 
-        {isTyping && <p className="text-sm text-gray-400">Digitando...</p>}
+        {isTyping && (
+          <p className="text-sm text-gray-400">Digitando...</p>
+        )}
       </div>
 
       {/* PILLS */}
