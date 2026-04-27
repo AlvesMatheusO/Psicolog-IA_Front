@@ -12,10 +12,16 @@ type Message = {
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([
-    { id: "1", text: "Olá! Sou seu assistente de PsicologIA. Como você está se sentindo hoje?", sender: "ai", timestamp: new Date() },
+    {
+      id: "1",
+      text: "Olá! Sou seu assistente de PsicologIA. Como você está se sentindo hoje?",
+      sender: "ai",
+      timestamp: new Date(),
+    },
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   const [riskLevel, setRiskLevel] = useState(1); // 1: Normal, 2: Alerta, 3: Crítico
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -111,7 +117,9 @@ export default function ChatPage() {
           <Brain className="w-8 h-8 text-blue-400" />
           <div>
             <h2 className="font-bold leading-none">PsicologIA</h2>
-            <span className="text-[10px] opacity-70">Ambiente de Produção - Render</span>
+            <span className="text-[10px] opacity-70">
+              Ambiente de Produção - Render
+            </span>
           </div>
         </div>
         <div className="relative">
@@ -150,8 +158,12 @@ export default function ChatPage() {
                         {theme === "light" ? "Modo Escuro" : "Modo Claro"}
                       </span>
                     </div>
-                    <div className={`w-8 h-4.5 px-0.5 rounded-full flex items-center transition-colors duration-300 ${theme === "dark" ? "bg-primary" : "bg-slate-200 dark:bg-slate-700"}`}>
-                      <div className={`w-3.5 h-3.5 bg-white rounded-full shadow-sm transition-transform duration-300 ${theme === "dark" ? "translate-x-3.5" : "translate-x-0"}`}></div>
+                    <div
+                      className={`w-8 h-4.5 px-0.5 rounded-full flex items-center transition-colors duration-300 ${theme === "dark" ? "bg-primary" : "bg-slate-200 dark:bg-slate-700"}`}
+                    >
+                      <div
+                        className={`w-3.5 h-3.5 bg-white rounded-full shadow-sm transition-transform duration-300 ${theme === "dark" ? "translate-x-3.5" : "translate-x-0"}`}
+                      ></div>
                     </div>
                   </button>
 
@@ -173,12 +185,25 @@ export default function ChatPage() {
       >
         <div className="max-w-3xl mx-auto space-y-8 pb-8">
           {messages.map((msg) => (
-            <div key={msg.id} className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
-              <div className={`flex gap-3 max-w-[85%] ${msg.sender === "user" ? "flex-row-reverse" : ""}`}>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center mt-auto shadow-sm ${msg.sender === "user" ? "bg-blue-600 text-white" : "bg-white border text-blue-600"}`}>
-                  {msg.sender === "user" ? <User className="w-4 h-4" /> : <Sparkles className="w-4 h-4" />}
+            <div
+              key={msg.id}
+              className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
+            >
+              <div
+                className={`flex gap-3 max-w-[85%] ${msg.sender === "user" ? "flex-row-reverse" : ""}`}
+              >
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center mt-auto shadow-sm ${msg.sender === "user" ? "bg-blue-600 text-white" : "bg-white border text-blue-600"}`}
+                >
+                  {msg.sender === "user" ? (
+                    <User className="w-4 h-4" />
+                  ) : (
+                    <Sparkles className="w-4 h-4" />
+                  )}
                 </div>
-                <div className={`px-4 py-3 rounded-2xl text-[15px] ${msg.sender === "user" ? "bg-blue-600 text-white shadow-blue-200" : "bg-white border border-slate-200 text-slate-800 shadow-sm"}`}>
+                <div
+                  className={`px-4 py-3 rounded-2xl text-[15px] ${msg.sender === "user" ? "bg-blue-600 text-white shadow-blue-200" : "bg-white border border-slate-200 text-slate-800 shadow-sm"}`}
+                >
                   {msg.text}
                 </div>
               </div>
@@ -206,7 +231,7 @@ export default function ChatPage() {
             {[
               "Preciso desabafar...",
               "Me dê dicas de relaxamento.",
-              "Como lidar com o estresse?"
+              "Como lidar com o estresse?",
             ].map((text, i) => (
               <button
                 key={i}
@@ -221,7 +246,9 @@ export default function ChatPage() {
           {/* Input Bar (Bright Glass) */}
           <div className="relative group">
             <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 text-foreground/40">
-              <button className="hover:text-primary transition-colors p-1"><Paperclip className="w-5 h-5" /></button>
+              <button className="hover:text-primary transition-colors p-1">
+                <Paperclip className="w-5 h-5" />
+              </button>
             </div>
 
             <input
@@ -230,7 +257,11 @@ export default function ChatPage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              placeholder={riskLevel === 3 ? "Conversa suspensa por segurança" : "Como você está se sentindo?"}
+              placeholder={
+                riskLevel === 3
+                  ? "Conversa suspensa por segurança"
+                  : "Como você está se sentindo?"
+              }
               disabled={isLoading || riskLevel === 3}
               className="flex-grow p-4 rounded-2xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all disabled:cursor-not-allowed"
             />
@@ -253,7 +284,6 @@ export default function ChatPage() {
           Ambiente Seguro & Sigiloso
         </p>
       </div>
-
 
       {/* Floating Trust Badge */}
       <div className="fixed bottom-24 right-6 pointer-events-none md:pointer-events-auto group">
