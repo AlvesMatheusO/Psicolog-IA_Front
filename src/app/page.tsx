@@ -22,6 +22,7 @@ export default function ChatPage() {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [riskLevel, setRiskLevel] = useState(1); // 1: Normal, 2: Alerta, 3: Crítico
   const scrollRef = useRef<HTMLDivElement>(null);
 
