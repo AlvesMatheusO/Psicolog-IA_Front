@@ -11,12 +11,9 @@ type Message = {
   timestamp: Date;
 };
 
+type RiskLevelType = 1 | 2 | 3;
+
 const MAX_MESSAGES = 50; // Limite de mensagens em memória
-const RISK_LEVEL = {
-  NORMAL: 1,
-  ALERT: 2,
-  CRITICAL: 3,
-} as const;
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([
@@ -30,7 +27,7 @@ export default function ChatPage() {
 
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [riskLevel, setRiskLevel] = useState(RISK_LEVEL.NORMAL);
+  const [riskLevel, setRiskLevel] = useState<RiskLevelType>(1);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll para a última mensagem
@@ -51,7 +48,7 @@ export default function ChatPage() {
   };
 
   // Detecta nível de risco baseado nas palavras-chave
-  const detectRiskLevel = (text: string): number => {
+  const detectRiskLevel = (text: string): RiskLevelType => {
     const prompt = text.toLowerCase();
 
     const termosCriticos = [
@@ -85,14 +82,14 @@ export default function ChatPage() {
     ];
 
     if (termosCriticos.some((termo) => prompt.includes(termo))) {
-      return RISK_LEVEL.CRITICAL;
+      return 3;
     }
 
     if (termosApoio.some((termo) => prompt.includes(termo))) {
-      return RISK_LEVEL.ALERT;
+      return 2;
     }
 
-    return RISK_LEVEL.NORMAL;
+    return 1;
   };
 
   // Fetch de resposta do backend
@@ -140,7 +137,7 @@ export default function ChatPage() {
   const handleSend = async (overrideText?: string) => {
     const textToSend = overrideText || input;
 
-    if (!textToSend.trim() || isLoading || riskLevel === RISK_LEVEL.CRITICAL) {
+    if (!textToSend.trim() || isLoading || riskLevel === 3) {
       return;
     }
 
@@ -214,7 +211,7 @@ export default function ChatPage() {
       >
         <div className="max-w-3xl mx-auto w-full space-y-6">
           {/* RISK ALERT - CRITICAL */}
-          {riskLevel === RISK_LEVEL.CRITICAL && (
+          {riskLevel === 3 && (
             <div className="bg-gradient-to-r from-red-600 to-red-700 text-white p-6 rounded-2xl shadow-2xl border-2 border-red-400 animate-pulse">
               <div className="flex gap-3 items-start">
                 <AlertTriangle className="w-6 h-6 flex-shrink-0 mt-1" />
@@ -234,7 +231,7 @@ export default function ChatPage() {
           )}
 
           {/* RISK ALERT - ALERT */}
-          {riskLevel === RISK_LEVEL.ALERT && riskLevel !== RISK_LEVEL.CRITICAL && (
+          {riskLevel === 2 && (
             <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-500 p-4 rounded-lg shadow-md">
               <p className="text-amber-900 text-sm font-medium">
                 <span className="inline-block mr-2">💛</span>
@@ -371,7 +368,7 @@ export default function ChatPage() {
               <button
                 key={pill}
                 onClick={() => handleSend(pill)}
-                disabled={isLoading || riskLevel === RISK_LEVEL.CRITICAL}
+                disabled={isLoading || riskLevel === 3}
                 className="whitespace-nowrap px-4 py-2 bg-gradient-to-r from-slate-100 to-slate-50 border border-slate-200 rounded-full text-sm font-medium text-slate-700 hover:from-blue-50 hover:to-slate-50 hover:border-blue-300 hover:text-blue-600 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
               >
                 {pill}
@@ -387,16 +384,16 @@ export default function ChatPage() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
               placeholder={
-                riskLevel === RISK_LEVEL.CRITICAL
+                riskLevel === 3
                   ? "Procure ajuda profissional agora..."
                   : "Como você está se sentindo? (Shift+Enter para quebra de linha)"
               }
-              disabled={isLoading || riskLevel === RISK_LEVEL.CRITICAL}
+              disabled={isLoading || riskLevel === 3}
               className="flex-1 p-4 rounded-2xl border-2 border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50 placeholder-slate-400 text-slate-900"
             />
             <button
               onClick={() => handleSend()}
-              disabled={!input.trim() || isLoading || riskLevel === RISK_LEVEL.CRITICAL}
+              disabled={!input.trim() || isLoading || riskLevel === 3}
               className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 rounded-2xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg shadow-blue-300 hover:shadow-blue-400 disabled:from-slate-300 disabled:to-slate-300 disabled:shadow-none disabled:cursor-not-allowed flex items-center justify-center hover:scale-105 active:scale-95"
             >
               <Send className="w-5 h-5" />
